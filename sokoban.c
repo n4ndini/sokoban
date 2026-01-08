@@ -210,10 +210,8 @@ void player_setup(struct tile board[ROWS][COLS], struct player *player) {
         printf("\n=== Starting Sokoban! ===\n");
         print_board(board, row, col);
         update_player_location(player, row, col);
-        return;
+        break;
     }
-
-    printf("\n");
 }
 
 void update_player_location(struct player *player, int row, int col) {
