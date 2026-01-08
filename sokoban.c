@@ -1,7 +1,6 @@
-// Program Name
-// Written by YOUR-NAME (YOUR-ZID),
-// on TODAYS-DATE
-// TODO: Program Description
+// Sokoban
+// Written by Nandini Patel,
+// on 26/12/25
 
 #include <stdio.h>
 #include <string.h>
@@ -29,21 +28,38 @@ struct tile {
     int box;
 };
 
+struct player {
+    int row;
+    int col;
+};
+
+
 // Function Prototypes
 void init_board(struct tile board[ROWS][COLS]);
 void print_line(void);
 void print_title(void);
 void print_board(struct tile board[ROWS][COLS], int player_row, int player_col);
 
-// Stage 1 function prototypes
-// 1.1
+// Stage 1 Function Prototypes
 void level_setup(struct tile board[ROWS][COLS]);
 void place_wall(struct tile board[ROWS][COLS], int row, int col);
 void place_storage(struct tile board[ROWS][COLS], int row, int col);
 void place_box(struct tile board[ROWS][COLS], int row, int col);
+void place_wall_line(struct tile board[ROWS][COLS], int startRow, int startCol, 
+                int endRow, int endCol);
 bool inbounds(int coord);
 
-// TODO: Your function prototypes go here
+// Stage 2 Function Prototypes
+// struct pos 
+void player_setup(struct tile board[ROWS][COLS], struct player *player);
+void update_player_location(struct player *player, int row, int col);
+void game_loop(struct tile board[ROWS][COLS], struct player *player);
+bool check_wall(struct tile board[ROWS][COLS], int row, int col);
+void move_up(struct tile board[ROWS][COLS], struct player *player);
+void move_down(struct tile board[ROWS][COLS], struct player *player);
+void move_left(struct tile board[ROWS][COLS], struct player *player);
+void move_right(struct tile board[ROWS][COLS], struct player *player);
+
 
 int main(void) {
     struct tile board[ROWS][COLS];
@@ -52,8 +68,11 @@ int main(void) {
     printf("=== Level Setup ===\n");
     level_setup(board);
 
-    // prints the board with no player, you might want to delete this...
-    print_board(board, -1, -1);
+    struct player player;
+    struct player *player_pointer = &player;
+    player_setup(board, player_pointer);
+
+    game_loop(board, player_pointer);
 
     return 0;
 }
@@ -62,11 +81,16 @@ int main(void) {
 ////////////////////////////// YOUR FUNCTIONS //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+// Stage 1 Functions
 void level_setup(struct tile board[ROWS][COLS]) {
     char command;
     int row = 0;
     int col = 0;
     while (scanf(" %c", &command) == 1) {
+        if (command == 'q') {
+            return;
+        }
+
         scanf("%d %d", &row, &col);
 
         if (command == 'w') {
@@ -77,6 +101,12 @@ void level_setup(struct tile board[ROWS][COLS]) {
         }
         if (command == 'b') {
             place_box(board, row, col);
+        }
+        if (command == 'W') {
+            int endRow;
+            int endCol;
+            scanf("%d %d", &endRow, &endCol);
+            place_wall_line(board, row, col, endRow, endCol);
         }
 
         print_board(board, -1, -1);
@@ -92,6 +122,8 @@ void place_wall(struct tile board[ROWS][COLS], int row, int col) {
             board[row][col].base = NONE;
             board[row][col].base = WALL;
         }
+    } else {
+        printf("Location out of bounds\n");
     }
 }
 
@@ -104,6 +136,8 @@ void place_storage(struct tile board[ROWS][COLS], int row, int col) {
         } else  {
             board[row][col].base = STORAGE;
         }
+    } else {
+        printf("Location out of bounds\n");
     }
 }
 
@@ -116,16 +150,135 @@ void place_box(struct tile board[ROWS][COLS], int row, int col) {
         if ((board[row][col].base == STORAGE) || (board[row][col].base == NONE)) {
             board[row][col].box = 1;
         }
+    } else {
+        printf("Location out of bounds\n");
+    }
+}
+
+void place_wall_line(struct tile board[ROWS][COLS], int startRow, int startCol, int endRow, int endCol) {
+    if ((!inbounds(startRow) || !inbounds(startCol)) && (!inbounds(endRow) && !inbounds(endCol))) {
+        printf("Location out of bounds\n");
+        return;
+    }
+
+    if (startRow < 0) { startRow = 0; }
+    if (startCol < 0) { startCol = 0; } 
+    if (endRow >= ROWS) { endRow = ROWS - 1; }
+    if (endCol >= COLS) { endCol = COLS - 1; }
+
+    int count = 0;
+
+    if (startRow == endRow) {
+        count = startCol;
+        while (count <= endCol) {
+            place_wall(board, startRow, count);
+            count += 1;
+        }
+    }
+    if (startCol == endCol) {
+        count = startRow;
+        while (count <= endRow) {
+            place_wall(board, count, startCol);
+            count += 1;
+        }
     }
 }
 
 bool inbounds(int coord) {
     if ((coord < 0) || (coord >= MAX_BOUND)) {
-        printf("Location out of bounds\n");
         return false;
     }
     return true;
 }
+
+
+// Stage 2 Functions
+void player_setup(struct tile board[ROWS][COLS], struct player *player) {
+    int row, col;
+
+    printf("Enter player starting position: ");
+    while (scanf("%d %d", &row, &col) == 2) {
+        if (!inbounds(row) || !inbounds(col) ||
+            board[row][col].base == WALL ||
+            board[row][col].box == 1) {
+
+            printf("Position (%d, %d) is invalid\n", row, col);
+            printf("Enter player starting position: ");
+            continue;
+        }
+
+        printf("\n=== Starting Sokoban! ===\n");
+        print_board(board, row, col);
+        update_player_location(player, row, col);
+        return;
+    }
+
+    printf("\n");
+}
+
+void update_player_location(struct player *player, int row, int col) {
+    player->row = row;
+    player->col = col;
+}
+
+void game_loop(struct tile board[ROWS][COLS], struct player *player) {
+    char move;
+    while (scanf(" %c", &move) == 1) {
+        if (move == 'w') {
+            move_up(board, player);
+        }
+        if (move == 'a') {
+            move_left(board, player);
+        }        
+        if (move == 's') {
+            move_down(board, player);
+        }
+        if (move == 'd') {
+            move_right(board, player);
+        }
+
+        print_board(board, player->row, player->col);
+    }
+
+}
+
+void move_up(struct tile board[ROWS][COLS], struct player *player) {
+    int row = player->row - 1;
+    if (inbounds(row) && inbounds(player->col) && !check_wall(board, row, player->col)) {
+        update_player_location(player, row, player->col);
+    }
+}
+
+void move_down(struct tile board[ROWS][COLS], struct player *player) {
+    int row = player->row + 1;
+    if (inbounds(row) && inbounds(player->col) && !check_wall(board, row, player->col)) {
+        update_player_location(player, row, player->col);
+    }
+}
+
+void move_left(struct tile board[ROWS][COLS], struct player *player) {
+    int col = player->col - 1;
+    if (inbounds(player->row) && inbounds(col) && !check_wall(board, player->row, col)) {
+        update_player_location(player, player->row, col);
+    }
+
+}
+
+void move_right(struct tile board[ROWS][COLS], struct player *player) {
+    int col = player->col + 1;
+    if (inbounds(player->row) && inbounds(col) && !check_wall(board, player->row, col)) {
+        update_player_location(player, player->row, col);
+    }
+}
+
+bool check_wall(struct tile board[ROWS][COLS], int row, int col) {
+    if (board[row][col].base == WALL) {
+        return true;
+    }
+
+    return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// PROVIDED FUNCTIONS //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
