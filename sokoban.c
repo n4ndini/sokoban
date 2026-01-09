@@ -31,6 +31,7 @@ struct tile {
 struct player {
     int row;
     int col;
+    int moves;
 };
 
 
@@ -71,6 +72,7 @@ int main(void) {
 
     struct player player;
     struct player *player_pointer = &player;
+    player.moves = -1;
     player_setup(board, player_pointer);
 
     game_loop(board, player_pointer);
@@ -218,6 +220,7 @@ void player_setup(struct tile board[ROWS][COLS], struct player *player) {
 void update_player_location(struct player *player, int row, int col) {
     player->row = row;
     player->col = col;
+    player->moves++;
 }
 
 void game_loop(struct tile board[ROWS][COLS], struct player *player) {
@@ -225,17 +228,15 @@ void game_loop(struct tile board[ROWS][COLS], struct player *player) {
     while (scanf(" %c", &move) == 1) {
         if (move == 'w') {
             move_up(board, player);
-        }
-        if (move == 'a') {
+        }else if (move == 'a') {
             move_left(board, player);
-        }        
-        if (move == 's') {
+        } else if (move == 's') {
             move_down(board, player);
-        }
-        if (move == 'd') {
+        } else if (move == 'd') {
             move_right(board, player);
+        } else if (move == 'c') {
+            printf("Number of moves so far: %d\n", player->moves);
         }
-
         print_board(board, player->row, player->col);
     }
 
