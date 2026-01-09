@@ -59,6 +59,7 @@ void move_up(struct tile board[ROWS][COLS], struct player *player);
 void move_down(struct tile board[ROWS][COLS], struct player *player);
 void move_left(struct tile board[ROWS][COLS], struct player *player);
 void move_right(struct tile board[ROWS][COLS], struct player *player);
+int wrap_coord(int coord);
 
 
 int main(void) {
@@ -242,30 +243,68 @@ void game_loop(struct tile board[ROWS][COLS], struct player *player) {
 
 void move_up(struct tile board[ROWS][COLS], struct player *player) {
     int row = player->row - 1;
-    if (inbounds(row) && inbounds(player->col) && !check_wall(board, row, player->col)) {
-        update_player_location(player, row, player->col);
+    int col = player->col;
+    if (!inbounds(row)) {
+        row = wrap_coord(row);
+    }
+    
+    if (!inbounds(col)) {
+        col = wrap_coord(col);
+    }
+    
+    if (!check_wall(board, row, col)) {
+        update_player_location(player, row, col);
     }
 }
 
 void move_down(struct tile board[ROWS][COLS], struct player *player) {
     int row = player->row + 1;
-    if (inbounds(row) && inbounds(player->col) && !check_wall(board, row, player->col)) {
-        update_player_location(player, row, player->col);
+    int col = player->col;
+    if (!inbounds(row)) {
+        row = wrap_coord(row);
+    }
+    
+    if (!inbounds(col)) {
+        col = wrap_coord(col);
+    }
+    
+    if (!check_wall(board, row, col)) {
+        update_player_location(player, row, col);
     }
 }
 
 void move_left(struct tile board[ROWS][COLS], struct player *player) {
     int col = player->col - 1;
-    if (inbounds(player->row) && inbounds(col) && !check_wall(board, player->row, col)) {
-        update_player_location(player, player->row, col);
+    int row = player->row;
+
+    if (!inbounds(row)) {
+        row = wrap_coord(row);
+    }
+    
+    if (!inbounds(col)) {
+        col = wrap_coord(col);
+    }
+    
+    if (!check_wall(board, row, col)) {
+        update_player_location(player, row, col);
     }
 
 }
 
 void move_right(struct tile board[ROWS][COLS], struct player *player) {
     int col = player->col + 1;
-    if (inbounds(player->row) && inbounds(col) && !check_wall(board, player->row, col)) {
-        update_player_location(player, player->row, col);
+    int row = player->row;
+
+    if (!inbounds(row)) {
+        row = wrap_coord(row);
+    }
+    
+    if (!inbounds(col)) {
+        col = wrap_coord(col);
+    }
+    
+    if (!check_wall(board, row, col)) {
+        update_player_location(player, row, col);
     }
 }
 
@@ -275,6 +314,14 @@ bool check_wall(struct tile board[ROWS][COLS], int row, int col) {
     }
 
     return false;
+}
+
+int wrap_coord(int coord) {
+    if (coord < 0) {
+        return MAX_BOUND - 1;
+    } else {
+        return 0;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
