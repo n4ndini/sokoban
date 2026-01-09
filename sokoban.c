@@ -67,6 +67,7 @@ void move_box_up(struct tile board[ROWS][COLS], struct player *player, int row, 
 void move_box_down(struct tile board[ROWS][COLS], struct player *player, int row, int col);
 void move_box_left(struct tile board[ROWS][COLS], struct player *player, int row, int col);
 void move_box_right(struct tile board[ROWS][COLS], struct player *player, int row, int col);
+bool check_win(struct tile board[ROWS][COLS]);
 
 
 int main(void) {
@@ -244,6 +245,15 @@ void game_loop(struct tile board[ROWS][COLS], struct player *player) {
             printf("Number of moves so far: %d\n", player->moves);
         }
         print_board(board, player->row, player->col);
+
+        if (check_win(board)) {
+            if (player->moves == 1) {
+                printf("=== Level Solved in 1 Move! ===\n");
+            } else {
+                printf("=== Level Solved in %d Moves! ===\n", player->moves);
+            }
+            break;
+        }
     }
 
 }
@@ -455,6 +465,18 @@ void move_box_right(struct tile board[ROWS][COLS], struct player *player, int ro
     board[boxRow][boxCol].box = 1;
 
     update_player_location(player, row, col);
+}
+
+bool check_win(struct tile board[ROWS][COLS]) {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            if ((board[i][j].box == 1) && (board[i][j].base != STORAGE)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 
