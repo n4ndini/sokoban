@@ -51,7 +51,6 @@ void place_wall_line(struct tile board[ROWS][COLS], int startRow, int startCol,
 bool inbounds(int coord);
 
 // Stage 2 Function Prototypes
-// struct pos 
 void player_setup(struct tile board[ROWS][COLS], struct player *player);
 void update_player_location(struct player *player, int row, int col);
 void game_loop(struct tile board[ROWS][COLS], struct player *player);
@@ -61,6 +60,13 @@ void move_down(struct tile board[ROWS][COLS], struct player *player);
 void move_left(struct tile board[ROWS][COLS], struct player *player);
 void move_right(struct tile board[ROWS][COLS], struct player *player);
 int wrap_coord(int coord);
+
+// Stage 3 Prototypes
+bool check_box(struct tile board[ROWS][COLS], int row, int col);
+void move_box_up(struct tile board[ROWS][COLS], struct player *player, int row, int col);
+void move_box_down(struct tile board[ROWS][COLS], struct player *player, int row, int col);
+void move_box_left(struct tile board[ROWS][COLS], struct player *player, int row, int col);
+void move_box_right(struct tile board[ROWS][COLS], struct player *player, int row, int col);
 
 
 int main(void) {
@@ -253,9 +259,16 @@ void move_up(struct tile board[ROWS][COLS], struct player *player) {
         col = wrap_coord(col);
     }
     
-    if (!check_wall(board, row, col)) {
-        update_player_location(player, row, col);
+    if (check_wall(board, row, col)) {
+        return;
     }
+
+    if (check_box(board, row, col)) {
+        move_box_up(board, player, row, col);
+        return;
+    } else {
+        update_player_location(player, row, col); 
+    }    
 }
 
 void move_down(struct tile board[ROWS][COLS], struct player *player) {
@@ -269,9 +282,16 @@ void move_down(struct tile board[ROWS][COLS], struct player *player) {
         col = wrap_coord(col);
     }
     
-    if (!check_wall(board, row, col)) {
-        update_player_location(player, row, col);
+    if (check_wall(board, row, col)) {
+        return;
     }
+
+    if (check_box(board, row, col)) {
+        move_box_down(board, player, row, col);
+        return;
+    } else {
+        update_player_location(player, row, col); 
+    }   
 }
 
 void move_left(struct tile board[ROWS][COLS], struct player *player) {
@@ -286,9 +306,16 @@ void move_left(struct tile board[ROWS][COLS], struct player *player) {
         col = wrap_coord(col);
     }
     
-    if (!check_wall(board, row, col)) {
-        update_player_location(player, row, col);
+    if (check_wall(board, row, col)) {
+        return;
     }
+
+    if (check_box(board, row, col)) {
+        move_box_left(board, player, row, col);
+        return;
+    } else {
+        update_player_location(player, row, col); 
+    } 
 
 }
 
@@ -304,9 +331,16 @@ void move_right(struct tile board[ROWS][COLS], struct player *player) {
         col = wrap_coord(col);
     }
     
-    if (!check_wall(board, row, col)) {
-        update_player_location(player, row, col);
+    if (check_wall(board, row, col)) {
+        return;
     }
+
+    if (check_box(board, row, col)) {
+        move_box_right(board, player, row, col);
+        return;
+    } else {
+        update_player_location(player, row, col); 
+    } 
 }
 
 bool check_wall(struct tile board[ROWS][COLS], int row, int col) {
@@ -324,6 +358,107 @@ int wrap_coord(int coord) {
         return 0;
     }
 }
+
+
+// Stage 3 Functions
+bool check_box(struct tile board[ROWS][COLS], int row, int col) {
+    if (board[row][col].box == 1) {
+        return true;
+    }
+
+    return false;
+}
+
+void move_box_up(struct tile board[ROWS][COLS], struct player *player, int row, int col) {
+    int boxRow = row;
+    int boxCol = col;
+    if (!inbounds(row - 1)) {
+        boxRow = wrap_coord(row - 1);
+    } else {
+        boxRow = row - 1;
+    }
+
+    if (!inbounds(col)) {
+        boxCol = wrap_coord(col);
+    }
+
+    if (check_wall(board, boxRow, boxCol)) {
+        return;
+    }
+
+    board[row][col].box = 0;
+    board[boxRow][boxCol].box = 1;
+
+    update_player_location(player, row, col);
+}
+
+void move_box_down(struct tile board[ROWS][COLS], struct player *player, int row, int col) {
+    int boxRow = row;
+    int boxCol = col;
+    if (!inbounds(row + 1)) {
+        boxRow = wrap_coord(row + 1);
+    } else {
+        boxRow = row + 1;
+    }
+
+    if (!inbounds(col)) {
+        boxCol = wrap_coord(col);
+    }
+
+    if (check_wall(board, boxRow, boxCol)) {
+        return;
+    }
+
+    board[row][col].box = 0;
+    board[boxRow][boxCol].box = 1;
+
+    update_player_location(player, row, col);
+}
+
+void move_box_left(struct tile board[ROWS][COLS], struct player *player, int row, int col) {
+    int boxRow = row;
+    int boxCol = col - 1;
+    if (!inbounds(row)) {
+        boxRow = wrap_coord(row);
+    } 
+
+    if (!inbounds(boxCol)) {
+        boxCol = wrap_coord(boxCol);
+    }
+
+    if (check_wall(board, boxRow, boxCol)) {
+        return;
+    }
+
+    board[row][col].box = 0;
+    board[boxRow][boxCol].box = 1;
+
+    update_player_location(player, row, col);
+}
+
+void move_box_right(struct tile board[ROWS][COLS], struct player *player, int row, int col) {
+    int boxRow = row;
+    int boxCol = col + 1;
+    if (!inbounds(row)) {
+        boxRow = wrap_coord(row);
+    } 
+
+    if (!inbounds(boxCol)) {
+        boxCol = wrap_coord(boxCol);
+    }
+
+    if (check_wall(board, boxRow, boxCol)) {
+        return;
+    }
+
+    board[row][col].box = 0;
+    board[boxRow][boxCol].box = 1;
+
+    update_player_location(player, row, col);
+}
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// PROVIDED FUNCTIONS //////////////////////////////
