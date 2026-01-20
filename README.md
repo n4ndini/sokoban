@@ -1,6 +1,6 @@
-# Sokoban
+# Sokoban 📦
 
-### How to:
+### Getting Started 💻
 1. Run the program in your terminal (./sokoban)
 2. Set up your level using the commands b (box), w (wall), s (storage) and W (line of wall). (PS enter the coords you want for entity as well)
 3. Set up your player start location
@@ -15,4 +15,10 @@
 - multiple moves can be made at once (e.g. entering wwwww will move the player 5 spaces up as long as the move is valid)
 - only moveable entities are the player and boxes
 
-that's all bye :)
+## License
+This project is licensed for educational and personal use only.
+
+Users are free to view, modify, and add to the code for learning or personal projects.
+Commercial use is strictly prohibited: you may not sell, distribute, or use this code in any commercial product or for-profit purpose.
+Any modifications or additions must also comply with this license and cannot be used commercially.
+By using this project, you agree to these terms.
