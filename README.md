@@ -8,14 +8,14 @@
 5. Once all boxes are on a storage location, you have won the game!
 
 
-### FYI:
+### FYI: ☝️🤓
 - played in the terminal
 - goal is to move all boxes to a storage location
 - player and box movement is wrapped (aka can move out of bounds, the player will just appear on the other side of board)
 - multiple moves can be made at once (e.g. entering wwwww will move the player 5 spaces up as long as the move is valid)
 - only moveable entities are the player and boxes
 
-## License
+## License 📄
 This project is licensed for educational and personal use only.
 
 Users are free to view, modify, and add to the code for learning or personal projects.
